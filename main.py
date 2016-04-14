@@ -71,6 +71,7 @@ class ComparisonPage(QtGui.QWidget):
 			b.setCheckable(True)
 			b.clicked.connect(self.onChoose)
 			b.setAutoExclusive(True)
+			b.setMinimumHeight(200)
 			self.buttons.append(b)
 			self.layout().addWidget(b)
 			
@@ -101,6 +102,7 @@ class TLXWindow(QtGui.QWidget):
 		
 	def createTabs(self):
 		self.tabs = QtGui.QTabWidget(self)
+		self.tabs.tabBar().hide()
 		
 		self.createParticipantPage()
 		self.createFactorsPage()
@@ -174,6 +176,8 @@ class TLXWindow(QtGui.QWidget):
 			self.previousButton.setDisabled(False)
 			if current == self.tabs.count() - 2:
 				self.nextButton.setDisabled(True)
+				
+		self.unfocus()
 		
 	def gotoPreviousPage(self):
 		current = self.tabs.currentIndex()
@@ -183,6 +187,12 @@ class TLXWindow(QtGui.QWidget):
 			if current == 1:
 				self.previousButton.setDisabled(True)
 		
+		self.unfocus()
+
+	def unfocus(self):
+		w = QtGui.QApplication.focusWidget()
+		if w is not None:
+			w.clearFocus()
 
 
 if __name__ == '__main__':
