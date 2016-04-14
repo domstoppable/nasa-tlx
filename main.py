@@ -118,6 +118,7 @@ class TLXWindow(QtGui.QWidget):
 		self.createParticipantPage()
 		self.createFactorsPage()
 		self.createComparisonPages()
+		self.createFinalPage()
 		self.layout().addWidget(self.tabs)
 		
 	def createNavigation(self):
@@ -176,6 +177,14 @@ class TLXWindow(QtGui.QWidget):
 			self.tabs.addTab(page, '%s vs %s' % (c[0], c[1]))
 			page.chosen.connect(self.onComparisonPicked)
 			self.comparisonPages.append(page)
+	
+	def createFinalPage(self):
+		w = QtGui.QWidget()
+		w.setLayout(QtGui.QVBoxLayout())
+		w.layout().addWidget(QtGui.QLabel('Completed!<br><br>Please let the research know that you are now done.'))
+		w.setLayout(layout)
+		self.tabs.addTab(w, 'Finished')
+
 	
 	def onComparisonPicked(self, choice, options):
 		print(choice, ' from ', options)
