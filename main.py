@@ -2,6 +2,8 @@ import random, os
 
 from PySide import QtGui, QtCore
 
+from config import settings
+
 factors = [
 	{
 		"name": "Mental Demand",
@@ -13,22 +15,22 @@ factors = [
 		"description": '''
 			How much physical activity was required?
 			Was the task easy or demanding, slack or strenuous?'''
-	}, {
+	},{
 		"name": "Temporal Demand",
 		"description": '''
 			How much time pressure did you feel due to the pace at which
 			the tasks or task elements occurred? Was the pace slow or rapid?'''
-	}, {
+	},{
 		"name": "Performance",
 		"description": '''
 			How successful were you in performing the task?
 			How satisfied were you with your performance?'''
-	}, {
+	},{
 		"name": "Frustration",
 		"description": '''
 			How irritated, stressed, and annoyed versus
 			content, relaxed, and complacent did you feel during the task?'''
-	}, {
+	},{
 		"name": "Effort",
 		"description": '''
 			How hard did you have to work (mentally and physically)
@@ -233,7 +235,7 @@ class TLXWindow(QtGui.QWidget):
 		for p in self.comparisonPages:
 			weights[p.getChoice()] += 1
 
-		outputFilename = '/tmp/test2'
+		outputFilename = settings.value('Output filename', 'nasa-tlx-output.csv')
 		if not os.path.isfile(outputFilename):
 			with open(outputFilename, 'w') as outputFile:
 				outputFile.write('ParticipantID')
