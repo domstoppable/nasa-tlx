@@ -63,17 +63,28 @@ class ComparisonPage(QtGui.QWidget):
 
 	def __init__(self, options):
 		super().__init__()
-		self.setLayout(QtGui.QHBoxLayout())
+		instructions = QtGui.QLabel('<font size="8">Select the Scale Title that represents the more important contributor to workload for the specific task you performed in this experiment.</font>')
+		instructions.setWordWrap(True)
+		instructions.setAlignment(QtCore.Qt.AlignCenter)
+		self.setLayout(QtGui.QVBoxLayout())
+		self.layout().setAlignment(QtCore.Qt.AlignVCenter)
+		self.layout().addWidget(instructions)
+		
+		buttonGrid = QtGui.QHBoxLayout()
 		self.options = options
 		self.buttons = []
-		for o in self.options:
-			b = QtGui.QPushButton(o)
+		for column, option in enumerate(self.options):
+			b = QtGui.QToolButton()
+			b.setText(option['name'])
 			b.setCheckable(True)
 			b.clicked.connect(self.onChoose)
 			b.setAutoExclusive(True)
 			b.setMinimumHeight(200)
+			b.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Maximum)
+			b.setToolTip(option['description'].strip().replace('\t', ''))
 			self.buttons.append(b)
-			self.layout().addWidget(b)
+			buttonGrid.addWidget(b)
+		self.layout().addLayout(buttonGrid)
 			
 	def getChoice(self):
 		for b in self.buttons:
@@ -151,10 +162,11 @@ class TLXWindow(QtGui.QWidget):
 	def createComparisonPages(self):
 		self.comparisonPages = []
 		comparisons = []
+
 		for i, f1 in enumerate(factors):
 			for j in range(i+1, len(factors)):
 				f2 = factors[j]
-				pair = [f1['name'], f2['name']]
+				pair = [f1, f2]
 				random.shuffle(pair)
 				comparisons.append(pair)
 				
