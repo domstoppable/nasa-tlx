@@ -1,4 +1,4 @@
-import random
+import random, os
 
 from PySide import QtGui, QtCore
 
@@ -41,13 +41,13 @@ class DemandSlider(QtGui.QWidget):
 		super().__init__(parent)
 		self.setLayout(QtGui.QVBoxLayout())
 		
-		slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
-		slider.setRange(1, 21)
-		slider.setTickInterval(1)
-		slider.setValue(11)
-		slider.setTickPosition(slider.TicksBothSides)
+		self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+		self.slider.setRange(0, 20)
+		self.slider.setTickInterval(1)
+		self.slider.setValue(11)
+		self.slider.setTickPosition(QtGui.QSlider.TicksBothSides)
 		
-		self.layout().addWidget(slider)
+		self.layout().addWidget(self.slider)
 		
 		labels = QtGui.QWidget(self)
 		labels.setLayout(QtGui.QHBoxLayout())
@@ -56,6 +56,9 @@ class DemandSlider(QtGui.QWidget):
 		label.setAlignment(QtCore.Qt.AlignRight)
 		labels.layout().addWidget(label)
 		self.layout().addWidget(labels)
+		
+	def value(self):
+		return self.slider.value() * 5
 
 class ComparisonPage(QtGui.QWidget):
 	chosen = QtCore.Signal(str, object)
@@ -144,18 +147,22 @@ class TLXWindow(QtGui.QWidget):
 		container.setLayout(QtGui.QVBoxLayout())
 		container.layout().setAlignment(QtCore.Qt.AlignVCenter)
 		container.layout().addWidget(QtGui.QLabel('<b>Participant ID</b>'))
-		container.layout().addWidget(QtGui.QLineEdit())
+		self.participantID = QtGui.QLineEdit()
+		container.layout().addWidget(self.participantID)
 		
 		self.tabs.addTab(container, 'Participant Info')
 		
 	def createFactorsPage(self):
 		w = QtGui.QWidget()
 		layout = QtGui.QFormLayout()
+		self.sliders = {}
 		for f in factors:
 			slider = DemandSlider()
 			layout.addRow('<br><b>%s</b>' % f['name'], None)
 			description = '<i>%s</i>' % f['description'].strip().replace('\n', '<br>')
 			layout.addRow(description, slider)
+			
+			self.sliders[f['name']] = slider
 			
 		w.setLayout(layout)
 		self.tabs.addTab(w, 'Factors')
@@ -182,12 +189,12 @@ class TLXWindow(QtGui.QWidget):
 		w = QtGui.QWidget()
 		w.setLayout(QtGui.QVBoxLayout())
 		w.layout().addWidget(QtGui.QLabel('Completed!<br><br>Please let the research know that you are now done.'))
-		w.setLayout(layout)
+		button = QtGui.QPushButton('Save and close')
+		button.clicked.connect(self.saveAndClose)
+		w.layout().addWidget(button)
 		self.tabs.addTab(w, 'Finished')
-
 	
 	def onComparisonPicked(self, choice, options):
-		print(choice, ' from ', options)
 		self.gotoNextPage()
 		
 	def gotoNextPage(self):
@@ -214,7 +221,41 @@ class TLXWindow(QtGui.QWidget):
 		w = QtGui.QApplication.focusWidget()
 		if w is not None:
 			w.clearFocus()
+			
+	def saveAndClose(self):
+		rawScores = {}
+		weights = {}
+		
+		for f in factors:
+			rawScores[f['name']] = self.sliders[f['name']].value()
+			weights[f['name']] = 0
+			
+		for p in self.comparisonPages:
+			weights[p.getChoice()] += 1
 
+		outputFilename = '/tmp/test2'
+		if not os.path.isfile(outputFilename):
+			with open(outputFilename, 'w') as outputFile:
+				outputFile.write('ParticipantID')
+				for f in factors:
+					outputFile.write('\t%s raw' % f['name'])
+				for f in factors:
+					outputFile.write('\t%s count' % f['name'])
+				for f in factors:
+					outputFile.write('\t%s weighted' % f['name'])
+				outputFile.write('\n')
+			
+		with open(outputFilename, 'a') as outputFile:
+			outputFile.write(self.participantID.text())
+			for f in factors:
+				outputFile.write('\t%d' % rawScores[f['name']])
+			for f in factors:
+				outputFile.write('\t%d' % weights[f['name']])
+			for f in factors:
+				outputFile.write('\t%d' % (rawScores[f['name']] * weights[f['name']] / 15))
+			outputFile.write('\n')
+				
+		self.close()
 
 if __name__ == '__main__':
 	import sys
