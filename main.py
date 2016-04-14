@@ -264,5 +264,8 @@ if __name__ == '__main__':
 
 	app = QtGui.QApplication(sys.argv)
 	appWindow = TLXWindow()
-	appWindow.show()
+	if settings.value('Show fullscreen', True):
+		appWindow.showFullScreen()
+	else:
+		appWindow.showMaximized()
 	sys.exit(app.exec_())
