@@ -1,4 +1,4 @@
-import random, os
+import random, os, time
 
 from PySide import QtGui, QtCore
 
@@ -106,6 +106,7 @@ class ComparisonPage(QtGui.QWidget):
 class TLXWindow(QtGui.QWidget):
 	def __init__(self):
 		super().__init__()
+		self.startTime = None
 		
 		self.setWindowTitle('NASA TLX')
 		font = self.font()
@@ -190,7 +191,7 @@ class TLXWindow(QtGui.QWidget):
 	def createFinalPage(self):
 		w = QtGui.QWidget()
 		w.setLayout(QtGui.QVBoxLayout())
-		w.layout().addWidget(QtGui.QLabel('Completed!<br><br>Please let the research know that you are now done.'))
+		w.layout().addWidget(QtGui.QLabel('<center>Completed!<br><br>Please let the researcher know that you are now done.</center>'))
 		button = QtGui.QPushButton('Save and close')
 		button.clicked.connect(self.saveAndClose)
 		w.layout().addWidget(button)
@@ -201,6 +202,9 @@ class TLXWindow(QtGui.QWidget):
 		
 	def gotoNextPage(self):
 		current = self.tabs.currentIndex()
+		if current == 0 and self.startTime is None:
+			self.startTime = time.time()
+			
 		if current < self.tabs.count():
 			self.tabs.setCurrentIndex(current+1)
 			self.previousButton.setDisabled(False)
@@ -238,23 +242,25 @@ class TLXWindow(QtGui.QWidget):
 		outputFilename = settings.value('Output filename', 'nasa-tlx-output.csv')
 		if not os.path.isfile(outputFilename):
 			with open(outputFilename, 'w') as outputFile:
-				outputFile.write('ParticipantID')
+				outputFile.write('ParticipantID,Start time,Stop time')
 				for f in factors:
-					outputFile.write('\t%s raw' % f['name'])
+					outputFile.write(',%s raw' % f['name'])
 				for f in factors:
-					outputFile.write('\t%s count' % f['name'])
+					outputFile.write(',%s count' % f['name'])
 				for f in factors:
-					outputFile.write('\t%s weighted' % f['name'])
+					outputFile.write(',%s weighted' % f['name'])
 				outputFile.write('\n')
 			
 		with open(outputFilename, 'a') as outputFile:
 			outputFile.write(self.participantID.text())
+			outputFile.write(',%d' % self.startTime)
+			outputFile.write(',%d' % time.time())
 			for f in factors:
-				outputFile.write('\t%d' % rawScores[f['name']])
+				outputFile.write(',%d' % rawScores[f['name']])
 			for f in factors:
-				outputFile.write('\t%d' % weights[f['name']])
+				outputFile.write(',%d' % weights[f['name']])
 			for f in factors:
-				outputFile.write('\t%d' % (rawScores[f['name']] * weights[f['name']] / 15))
+				outputFile.write(',%d' % (rawScores[f['name']] * weights[f['name']] / 15))
 			outputFile.write('\n')
 				
 		self.close()
