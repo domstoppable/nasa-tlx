@@ -156,6 +156,11 @@ class TLXWindow(QtGui.QWidget):
 		self.tabs.addTab(container, 'Participant Info')
 		
 	def createFactorsPage(self):
+		self.addInstructionsPage('''
+			We're not only interested in assessing your performance but also the experiences you had during the different task conditions. In the most general sense, we are examining the "workload" you experienced. Workload is a difficult concept to define precisely, but a simple one to understand generally. The factors that influence your experience of workload may come from the task itself, your feelings about your own performance, how much effort you put in, or the stress and frustration you felt. The workload contributed by different task elements may change as you get from one task to another. Physical components of workload are relatively easy to conceptualize and evaluate. However, the mental components of workload may be more difficult to measure.
+			Since workload is something that is experienced individually by each person, there are no effective "rulers" that can be used to estimate the workload of different activities. One way to find out about workload is to ask people to describe the feelings they experienced. Because workload may be caused by many different factors, we would like you to evaluate several of them individually, rather than lumping them into a single global evaluation of overall workload. This set of six rating scales was developed for you to use in evaluating your experience. Please read the descriptions of the scales carefully. If you have a question about any of the scales in the table, please ask me about it. It is extremely important that they be clear to you.'''
+		)
+
 		w = QtGui.QWidget()
 		layout = QtGui.QFormLayout()
 		self.sliders = {}
@@ -171,6 +176,12 @@ class TLXWindow(QtGui.QWidget):
 		self.tabs.addTab(w, 'Factors')
 		
 	def createComparisonPages(self):
+		self.addInstructionsPage('''
+			The evaluation you are about to perform is a technique that has been developed by NASA to assess the relative importance of six factors in determining how much workload you experienced. The procedure is simple: you will be presented with pairs of rating scale titles (for example, Effort vs Mental Demands) and asked to choose which of the items was more important to your experience of workload in the task(s) that you just performed. Each pair of scale titles will appear on a separate screen.
+			Click on the Scale Title that represents the more important contributor to workload for the specific task you performed in this experiment.
+			After you have finished the entire series we will be able to use the pattern of your choices to create a weighted combination of the ratings from that task into a summary workload score. Please consider your choices carefully and make them consistent with how you used the rating scales during the particular task you were asked to evaluate. Don't think that there is any correct pattern: we are only interested in your opinions.
+			If you have any questions, please ask them now. Otherwise, start whenever you are ready'''
+		)
 		self.comparisonPages = []
 		comparisons = []
 
@@ -197,6 +208,11 @@ class TLXWindow(QtGui.QWidget):
 		w.layout().addWidget(button)
 		self.tabs.addTab(w, 'Finished')
 	
+	def addInstructionsPage(self, text):
+		w = QtGui.QLabel('<center>%s</center>' % text.replace('\n', '<br><br><br>'))
+		w.setWordWrap(True)
+		self.tabs.addTab(w, 'Instructions')
+	
 	def onComparisonPicked(self, choice, options):
 		self.gotoNextPage()
 		
@@ -211,7 +227,7 @@ class TLXWindow(QtGui.QWidget):
 			if current == self.tabs.count() - 2:
 				self.nextButton.setDisabled(True)
 				
-		self.unfocus()
+		self.pageTurned()
 		
 	def gotoPreviousPage(self):
 		current = self.tabs.currentIndex()
@@ -220,7 +236,11 @@ class TLXWindow(QtGui.QWidget):
 			self.nextButton.setDisabled(False)
 			if current == 1:
 				self.previousButton.setDisabled(True)
-		
+
+	def pageTurned(self):
+		if isinstance(self.tabs.currentWidget(), ComparisonPage):
+			self.nextButton.setDisabled(self.tabs.currentWidget().getChoice() is None)
+
 		self.unfocus()
 
 	def unfocus(self):
