@@ -1,4 +1,5 @@
 import random, os, time
+from functools import partial
 
 from PySide import QtGui, QtCore
 
@@ -214,20 +215,21 @@ class TLXWindow(QtGui.QWidget):
 		self.tabs.addTab(w, 'Instructions')
 	
 	def onComparisonPicked(self, choice, options):
-		self.gotoNextPage()
+		self.gotoNextPage(True)
 		
-	def gotoNextPage(self):
-		current = self.tabs.currentIndex()
-		if current == 0 and self.startTime is None:
-			self.startTime = time.time()
-			
-		if current < self.tabs.count():
-			self.tabs.setCurrentIndex(current+1)
-			self.previousButton.setDisabled(False)
-			if current == self.tabs.count() - 2:
-				self.nextButton.setDisabled(True)
+	def gotoNextPage(self, override=False):
+		if override or self.nextButton.isEnabled():
+			current = self.tabs.currentIndex()
+			if current == 0 and self.startTime is None:
+				self.startTime = time.time()
 				
-		self.pageTurned()
+			if current < self.tabs.count():
+				self.tabs.setCurrentIndex(current+1)
+				self.previousButton.setDisabled(False)
+				if current == self.tabs.count() - 2:
+					self.nextButton.setDisabled(True)
+					
+			self.pageTurned()
 		
 	def gotoPreviousPage(self):
 		current = self.tabs.currentIndex()
@@ -247,6 +249,10 @@ class TLXWindow(QtGui.QWidget):
 		w = QtGui.QApplication.focusWidget()
 		if w is not None:
 			w.clearFocus()
+			
+	def keyPressEvent(self, event):
+		if event.key() in [QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return]:
+			self.gotoNextPage()
 			
 	def saveAndClose(self):
 		rawScores = {}
