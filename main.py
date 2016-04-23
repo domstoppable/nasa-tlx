@@ -105,7 +105,7 @@ class ComparisonPage(QtGui.QWidget):
 		self.cleared.emit(self.options)
 		
 class TLXWindow(QtGui.QWidget):
-	def __init__(self):
+	def __init__(self, participantID=None):
 		super().__init__()
 		self.startTime = None
 		
@@ -117,6 +117,10 @@ class TLXWindow(QtGui.QWidget):
 		
 		self.createTabs()
 		self.createNavigation()
+		
+		if participantID is not None:
+			self.participantID.setText(participantID)
+			self.gotoNextPage(True)
 		
 	def createTabs(self):
 		self.tabs = QtGui.QTabWidget(self)
@@ -295,7 +299,11 @@ if __name__ == '__main__':
 	import sys
 
 	app = QtGui.QApplication(sys.argv)
-	appWindow = TLXWindow()
+	if len(sys.argv) > 1:
+		appWindow = TLXWindow(sys.argv[1])
+	else:
+		appWindow = TLXWindow()
+
 	if settings.value('Show fullscreen', True):
 		appWindow.showFullScreen()
 	else:
